@@ -18,7 +18,7 @@
         const input = document.createElement('input');
         const heading = document.querySelector('h1');
         const themeToggle = document.createElement('button');
-        const body = document.body;
+        const root = document.documentElement;
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
         const table = document.querySelector('#list');
         const tbody = table?.querySelector('tbody');
@@ -111,18 +111,20 @@
                 });
         }
 
-        // Create top toolbar for search, spacing, and theme toggles
-        const toolbar = document.createElement('div');
+        // Adopt the toolbar rendered by the theme header, or build it when absent
+        const toolbar = document.querySelector('.top-toolbar') || document.createElement('div');
         toolbar.className = 'top-toolbar';
 
         // Title on left side
-        const toolbarTitle = document.createElement('span');
-        toolbarTitle.className = 'toolbar-title';
-        toolbarTitle.textContent = 'Nginx Static File Server';
-        toolbar.appendChild(toolbarTitle);
+        if (!toolbar.querySelector('.toolbar-title')) {
+                const toolbarTitle = document.createElement('span');
+                toolbarTitle.className = 'toolbar-title';
+                toolbarTitle.textContent = 'Nginx Static File Server';
+                toolbar.appendChild(toolbarTitle);
+        }
 
         // Right side controls container
-        const toolbarControls = document.createElement('div');
+        const toolbarControls = toolbar.querySelector('.toolbar-controls') || document.createElement('div');
         toolbarControls.className = 'toolbar-controls';
 
         // Search input (added to toolbar controls)
@@ -154,8 +156,8 @@
         }
 
         function applySpacing(spacing) {
-                body.classList.remove('spacing-compact', 'spacing-normal', 'spacing-comfortable');
-                body.classList.add(`spacing-${spacing}`);
+                root.classList.remove('spacing-compact', 'spacing-normal', 'spacing-comfortable');
+                root.classList.add(`spacing-${spacing}`);
         }
 
         function getStoredSpacing() {
@@ -283,8 +285,7 @@
                 });
 
                 breadcrumbNav.appendChild(copyBtn);
-                heading.style.display = 'none';
-                heading.after(breadcrumbNav);
+                heading.replaceWith(breadcrumbNav);
         }
 
         createBreadcrumbs();
@@ -315,10 +316,14 @@
         });
 
         toolbarControls.appendChild(themeToggle);
-        toolbar.appendChild(toolbarControls);
+        if (!toolbarControls.parentNode) {
+                toolbar.appendChild(toolbarControls);
+        }
 
         // Insert toolbar at top of body
-        document.body.insertBefore(toolbar, document.body.firstChild);
+        if (!toolbar.parentNode) {
+                document.body.insertBefore(toolbar, document.body.firstChild);
+        }
 
         const listItems = tbody ? Array.from(tbody.querySelectorAll('tr')) : [];
         let filteredItems = [...listItems];
@@ -526,8 +531,9 @@
                         mediaQuery.removeEventListener('change', handleSystemThemeChange);
                 }
 
-                body.classList.remove('theme-light', 'theme-dark');
-                body.classList.add(`theme-${actualTheme}`);
+                root.classList.remove('theme-light', 'theme-dark');
+                root.classList.add(`theme-${actualTheme}`);
+                root.style.colorScheme = actualTheme;
         }
 
         function handleSystemThemeChange(event) {
@@ -543,6 +549,9 @@
         if (currentThemeIndex === -1) currentThemeIndex = 0;
         applyTheme(storedTheme);
         updateThemeButton();
+
+        // Enable theme transitions only after the initial paint
+        requestAnimationFrame(() => root.classList.add('theme-ready'));
 
         // Keyboard shortcuts
         document.addEventListener('keydown', (event) => {

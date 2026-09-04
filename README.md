@@ -527,10 +527,12 @@ uses an embedded theme with the following features:
 - Pagination for directories with many files
 - Breadcrumb navigation
 - File type icons
+- Sanitized rendering of `HEADER.md` and `README.md`
 - Keyboard shortcuts (`/` for search, `t` for theme toggle)
 
 The built-in theme serves CSS and JavaScript directly from the module at
-`/_nfi_theme/*` paths. No external files are required.
+`/_nfi_theme/*` paths, including its Showdown Markdown renderer and
+DOMPurify sanitizer. No external files or CDN connections are required.
 
 When set to `off` (the default), the traditional behavior is used, and
 you can customize the appearance using `fancyindex_header`,

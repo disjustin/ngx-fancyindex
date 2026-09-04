@@ -16,20 +16,66 @@ if [[ "$html" != *"/_nfi_theme/fancyindex.js"* ]]; then
     fail 'Directory listing does not include reference to theme JavaScript\n'
 fi
 
-# Test 2: Theme CSS should be served correctly
+if [[ "$html" != *"/_nfi_theme/purify.min.js"* ]]; then
+    fail 'Directory listing does not include reference to DOMPurify\n'
+fi
+
+if [[ "$html" != *"/_nfi_theme/showdown.min.js"* ]]; then
+    fail 'Directory listing does not include reference to Showdown\n'
+fi
+
+if [[ "$html" == *"unpkg.com"* || "$html" == *"cdn.jsdelivr.net"* ]]; then
+    fail 'Directory listing CSP allows external CDN origins\n'
+fi
+
+if [[ "$html" == *"/_nfi_theme/jquery.min.js"* || "$html" == *"/_nfi_theme/sw.js"* ]]; then
+    fail 'Directory listing references unused theme assets\n'
+fi
+
+# Test 2: Theme must be resolved before the first paint, not on <body>
+if [[ "$html" != *"fancyindex-theme"* || "$html" != *"colorScheme"* ]]; then
+    fail 'Directory listing does not include the pre-paint theme bootstrap\n'
+fi
+
+if [[ "${html%%<link*}" != *"fancyindex-theme"* ]]; then
+    fail 'Pre-paint theme bootstrap does not precede the stylesheet\n'
+fi
+
+if [[ "$html" == *"<body class="* ]]; then
+    fail 'Theme class is still applied on <body>\n'
+fi
+
+if [[ "$html" != *'class="top-toolbar"'* || "$html" != *'class="toolbar-controls"'* ]]; then
+    fail 'Directory listing does not pre-render the toolbar\n'
+fi
+
+if [[ "$html" != *'<h1 class="breadcrumb-nav path-heading"'* ]]; then
+    fail 'Directory listing does not pre-render the path as a breadcrumb bar\n'
+fi
+
+# Test 3: Theme assets should be served correctly
 css=$(fetch /_nfi_theme/styles.css)
 if [[ "$css" != *"box-sizing"* ]]; then
     fail 'Theme CSS was not served correctly\n'
 fi
 
-# Test 3: Theme JavaScript should be served correctly
 js=$(fetch /_nfi_theme/fancyindex.js)
 if [[ "$js" != *"THEME_STORAGE_KEY"* ]]; then
     fail 'Theme JavaScript was not served correctly\n'
 fi
 
+purify=$(fetch /_nfi_theme/purify.min.js)
+if [[ "$purify" != *"DOMPurify"* ]]; then
+    fail 'DOMPurify was not served correctly\n'
+fi
+
+showdown=$(fetch /_nfi_theme/showdown.min.js)
+if [[ "$showdown" != *"showdown"* ]]; then
+    fail 'Showdown was not served correctly\n'
+fi
+
 # Test 4: Non-existent theme asset should return 404
-response=$(fetch --with-headers /_nfi_theme/nonexistent.css 2>&1)
+response=$(fetch --with-headers /_nfi_theme/nonexistent.css 2>&1 || true)
 if [[ "$response" != *"404"* ]]; then
     fail 'Non-existent theme asset did not return 404\n'
 fi

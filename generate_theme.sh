@@ -79,6 +79,8 @@ echo "/* ========================================" >> "$OUTPUT_FILE"
 echo "   Embedded JavaScript" >> "$OUTPUT_FILE"
 echo "   ======================================== */" >> "$OUTPUT_FILE"
 file_to_c_array "${THEME_DIR}/addNginxFancyIndexForm.js" "js" "application/javascript; charset=utf-8" >> "$OUTPUT_FILE"
+file_to_c_array "${THEME_DIR}/purify.min.js" "purify" "application/javascript; charset=utf-8" >> "$OUTPUT_FILE"
+file_to_c_array "${THEME_DIR}/showdown.min.js" "showdown" "application/javascript; charset=utf-8" >> "$OUTPUT_FILE"
 
 # Generate header HTML (modified for built-in use)
 echo "/* ========================================" >> "$OUTPUT_FILE"
@@ -106,11 +108,15 @@ cat >> "$OUTPUT_FILE" << 'FOOTER'
 /* Asset paths for embedded theme */
 #define NFI_THEME_CSS_PATH "/_nfi_theme/styles.css"
 #define NFI_THEME_JS_PATH "/_nfi_theme/fancyindex.js"
+#define NFI_THEME_PURIFY_PATH "/_nfi_theme/purify.min.js"
+#define NFI_THEME_SHOWDOWN_PATH "/_nfi_theme/showdown.min.js"
 
 /* Asset enumeration */
 typedef enum {
     NFI_THEME_ASSET_CSS,
     NFI_THEME_ASSET_JS,
+    NFI_THEME_ASSET_PURIFY,
+    NFI_THEME_ASSET_SHOWDOWN,
     NFI_THEME_ASSET_NONE
 } nfi_theme_asset_t;
 
@@ -141,6 +147,22 @@ static const nfi_theme_asset_info_t nfi_theme_assets[] = {
         nfi_theme_js_data,
         nfi_theme_js_len
     },
+    {
+        "/purify.min.js",
+        14,
+        nfi_theme_purify_mime,
+        sizeof(nfi_theme_purify_mime) - 1,
+        nfi_theme_purify_data,
+        nfi_theme_purify_len
+    },
+    {
+        "/showdown.min.js",
+        16,
+        nfi_theme_showdown_mime,
+        sizeof(nfi_theme_showdown_mime) - 1,
+        nfi_theme_showdown_data,
+        nfi_theme_showdown_len
+    },
     { NULL, 0, NULL, 0, NULL, 0 }
 };
 
@@ -153,7 +175,9 @@ echo "Theme files embedded successfully."
 # Show file sizes
 echo ""
 echo "Embedded assets:"
-for f in "${THEME_DIR}/styles.css" "${THEME_DIR}/addNginxFancyIndexForm.js" "${THEME_DIR}/header.html" "${THEME_DIR}/footer.html"; do
+for f in "${THEME_DIR}/styles.css" "${THEME_DIR}/addNginxFancyIndexForm.js" \
+    "${THEME_DIR}/purify.min.js" "${THEME_DIR}/showdown.min.js" \
+    "${THEME_DIR}/header.html" "${THEME_DIR}/footer.html"; do
     if [ -f "$f" ]; then
         size=$(wc -c < "$f" | tr -d ' ')
         echo "  ${f##*/}: ${size} bytes"

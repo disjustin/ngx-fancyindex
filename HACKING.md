@@ -43,6 +43,8 @@ The built-in theme files are located in the `theme/` directory:
 - `footer.html` - HTML footer template with JavaScript initialization
 - `styles.css` - CSS stylesheet with light/dark theme support
 - `addNginxFancyIndexForm.js` - JavaScript for search, pagination, and theme toggle
+- `purify.min.js` - DOMPurify for sanitizing rendered Markdown
+- `showdown.min.js` - Showdown for rendering `HEADER.md` and `README.md`
 
 After modifying any of these files, you must regenerate the `theme_builtin.h`
 header which embeds these files as C byte arrays:
@@ -61,9 +63,32 @@ When using `fancyindex_theme builtin`, the module serves embedded assets at:
 
 - `/_nfi_theme/styles.css` - CSS stylesheet
 - `/_nfi_theme/fancyindex.js` - JavaScript functionality
+- `/_nfi_theme/purify.min.js` - Markdown HTML sanitizer
+- `/_nfi_theme/showdown.min.js` - Markdown renderer
 
 These paths are handled directly by the module and do not require any
 filesystem configuration.
+
+### Theme and spacing classes
+
+The `theme-light` / `theme-dark` and `spacing-*` classes live on the `<html>`
+element, not on `<body>`. A small blocking script in the `<head>` of
+`header.html` reads the stored preferences and sets those classes before the
+first paint, which avoids a light flash while `fancyindex.js` is still loading.
+The script and `addNginxFancyIndexForm.js` must keep using the same
+`fancyindex-theme` and `fancyindex-spacing` storage keys, and CSS rules for
+these classes must not be scoped to `body`. Colour transitions are gated behind
+the `theme-ready` class, which is only added after initialization.
+
+### Pre-rendered chrome
+
+`header.html` also ships the `.top-toolbar` shell and tags the path `<h1>` with
+`breadcrumb-nav path-heading`, so the toolbar row and the path bar occupy their
+final layout on the first paint. `addNginxFancyIndexForm.js` therefore populates
+`.toolbar-controls` and replaces the heading in place instead of creating and
+inserting that chrome. Keep the reserved heights on `.toolbar-controls` and
+`.breadcrumb-nav` in sync with the controls they hold, otherwise the listing
+shifts once the script runs.
 
 ## Building on Rocky Linux 9 / EL9
 
