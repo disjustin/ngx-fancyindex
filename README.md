@@ -66,9 +66,8 @@ cd ngx-fancyindex
 # Generate the embedded theme (if not already present)
 bash generate_theme.sh
 
-# Find nginx source directory (installed by nginx-mod-devel)
-# Typically at /usr/src/nginx-<version>
-NGINX_SRC=$(ls -d /usr/src/nginx-* 2>/dev/null | head -1)
+# Find nginx source directory (nginx-mod-devel, NVR of the running nginx RPM)
+NGINX_SRC=/usr/src/nginx-$(rpm -q --qf '%{v}-%{r}' nginx)
 
 # Configure and build the dynamic module
 cd "$NGINX_SRC"

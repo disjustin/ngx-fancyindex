@@ -76,9 +76,8 @@ allows building dynamic modules using nginx's configure script:
     # Generate the theme header (from the ngx-fancyindex directory)
     bash generate_theme.sh
 
-    # Find the nginx source directory
-    NGINX_SRC=$(ls -d /usr/src/nginx-* 2>/dev/null | head -1)
-    # Example: /usr/src/nginx-1.20.1-24.el9
+    # Find nginx source directory (nginx-mod-devel, NVR of the running nginx RPM)
+    NGINX_SRC=/usr/src/nginx-$(rpm -q --qf '%{v}-%{r}' nginx)
 
     # Configure and build the dynamic module
     cd "$NGINX_SRC"

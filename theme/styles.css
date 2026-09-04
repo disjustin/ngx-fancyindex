@@ -418,13 +418,14 @@ td a {
         font-style: normal;
 }
 
-/* Directory/Folder */
-#list tbody tr td:first-child a[href$="/"]::before {
+/* Directory/Folder (sorted listings append ?C=x&O=y to directory links) */
+#list tbody tr td:first-child a[href$="/"]::before,
+#list tbody tr td:first-child a[href*="/?C="]::before {
         content: '📁';
 }
 
 /* Parent directory */
-#list tbody tr.parent td:first-child a::before {
+#list tbody tr td:first-child a[href^="../"]::before {
         content: '⬆️';
 }
 
